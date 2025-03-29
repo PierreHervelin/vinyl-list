@@ -1,0 +1,11 @@
+{
+  "name": "@vinyl-list/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Add dev script here'"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
