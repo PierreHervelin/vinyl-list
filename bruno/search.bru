@@ -1,0 +1,31 @@
+meta {
+  name: search
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{api-base-url}}
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  {
+    search(query: "Damso") {
+      items
+      page
+      pages
+      perPage
+      results {
+        id
+        title
+        artist
+        genre
+        year
+        coverImage
+      }
+    }
+  }
+  
+}

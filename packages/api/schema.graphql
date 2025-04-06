@@ -1,0 +1,39 @@
+type Vinyl {
+    id: Int!
+    title: String!
+    artist: String!
+    style: [String!]
+    genre: [String!]
+    year: String
+    format: [String!]
+    coverImage: String
+}
+
+type ListVinyl {
+    _id: ID!
+    discogsId: Int!
+    title: String!
+    artist: String!
+    genre: [String!]
+    year: String
+    coverImage: String
+    createdAt: String
+}
+
+type Pagination {
+    items: Int!
+    pages: Int!
+    page: Int!
+    perPage: Int!
+    results: [Vinyl!]
+}
+
+type Query {
+    search(query: String!, genre: [String!], artist: [String!]): Pagination
+    list(page: Int): [ListVinyl!]
+}
+
+type Mutation {
+    addInList(id: Int!, title: String!, artist: String!, genre: [String!], year: String, coverImage: String): ListVinyl
+    removeFromList(id: ID!): ListVinyl
+}

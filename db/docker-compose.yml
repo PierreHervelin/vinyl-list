@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: vinyl-list-mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb-data:/data/db
+      - mongodb-conf:/data/configdb
+    environment:
+      MONGO_INITDB_DATABASE: vinyl-list
+volumes:
+  mongodb-data:
+    name: vinyl-list-mongodb-data
+  mongodb-conf:
+    name: vinyl-list-mongodb-conf

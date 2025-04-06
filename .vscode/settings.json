@@ -1,0 +1,12 @@
+{
+    "cSpell.words": [
+        "catno",
+        "codegen",
+        "datasource",
+        "discogs",
+        "Discogs",
+        "luxon"
+    ],
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "cSpell.language": "en,fr"
+}
