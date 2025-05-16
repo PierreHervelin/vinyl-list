@@ -1,13 +1,14 @@
-import { SearchWrapper } from './pages/search/search';
-import { Navbar } from './components/navbar';
-import { Box, Flex, Spinner } from '@radix-ui/themes';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import React, { createContext, useContext, useEffect, useMemo, type PropsWithChildren } from 'react';
-import { graphql } from './gql';
 import { useQuery } from '@apollo/client';
-import { useListStore } from './pages/list/store';
-import { List } from './pages/list/list';
+import { Box, Flex, Spinner } from '@radix-ui/themes';
+import React, { createContext, useContext, useEffect, useMemo, type PropsWithChildren } from 'react';
 import { isMobile } from 'react-device-detect';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Navbar } from './components/navbar';
+import { graphql } from './gql';
+import { Collection } from './pages/collection/collection';
+import { List } from './pages/list/list';
+import { useListStore } from './pages/list/store';
+import { SearchWrapper } from './pages/search/search';
 
 const GET_LIST = graphql(`
     query GetList {
@@ -19,6 +20,7 @@ const GET_LIST = graphql(`
             genre
             year
             coverImage
+            status
             createdAt
         }
     }
@@ -93,6 +95,7 @@ export const App = () => {
                         <Routes>
                             <Route path="/" element={<SearchWrapper />} />
                             <Route path="/list" element={<List />} />
+                            <Route path="/collection" element={<Collection />} />
                         </Routes>
                     </Box>
                 </Flex>

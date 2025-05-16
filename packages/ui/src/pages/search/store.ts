@@ -4,10 +4,12 @@ import type { Pagination, Vinyl } from '../../gql/graphql';
 interface SearchStore {
     searchResult: Pagination;
     query: string;
-    genre: string;
+    genre: string[];
     artist: string[];
     setQuery: (query: string) => void;
-    setGenre: (genre: string) => void;
+    setGenre: (genre: string[]) => void;
+    addGenre: (genre: string) => void;
+    removeGenre: (genre: string) => void;
     setArtist: (artist: string[]) => void;
     addArtist: (artist: string) => void;
     removeArtist: (artist: string) => void;
@@ -42,7 +44,7 @@ export const useSearchStore = create<SearchStore>(set => ({
         results: [],
     },
     query: new URLSearchParams(window.location.search).get('query') ?? '',
-    genre: new URLSearchParams(window.location.search).get('genre') ?? 'empty',
+    genre: new URLSearchParams(window.location.search).get('genre')?.split(',') ?? [],
     artist: new URLSearchParams(window.location.search).get('artist')?.split(',') ?? [],
     setSearchResult: result => {
         set({
@@ -65,6 +67,13 @@ export const useSearchStore = create<SearchStore>(set => ({
         }),
     setQuery: query => set({ query }),
     setGenre: genre => set({ genre }),
+    addGenre: genre => {
+        set(state => {
+            if (state.genre.includes(genre)) return state;
+            return { genre: [...state.genre, genre] };
+        });
+    },
+    removeGenre: genre => set(state => ({ genre: state.genre.filter(g => g !== genre) })),
     setArtist: artist => set({ artist }),
     addArtist: artist => {
         const cleanedArtist = artist.replace(/\(\d+\)$/, '').trim();

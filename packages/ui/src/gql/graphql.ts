@@ -26,6 +26,8 @@ export type ListVinyl = {
     createdAt?: Maybe<Scalars['String']['output']>;
     discogsId: Scalars['Int']['output'];
     genre?: Maybe<Array<Scalars['String']['output']>>;
+    monthlyDate?: Maybe<Scalars['String']['output']>;
+    status: Scalars['String']['output'];
     title: Scalars['String']['output'];
     year?: Maybe<Scalars['String']['output']>;
 };
@@ -33,7 +35,9 @@ export type ListVinyl = {
 export type Mutation = {
     __typename?: 'Mutation';
     addInList?: Maybe<ListVinyl>;
+    monthly?: Maybe<ListVinyl>;
     removeFromList?: Maybe<ListVinyl>;
+    updateInList?: Maybe<ListVinyl>;
 };
 
 export type MutationAddInListArgs = {
@@ -41,12 +45,22 @@ export type MutationAddInListArgs = {
     coverImage?: InputMaybe<Scalars['String']['input']>;
     genre?: InputMaybe<Array<Scalars['String']['input']>>;
     id: Scalars['Int']['input'];
+    status?: InputMaybe<Scalars['String']['input']>;
     title: Scalars['String']['input'];
     year?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type MutationMonthlyArgs = {
+    month?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type MutationRemoveFromListArgs = {
     id: Scalars['ID']['input'];
+};
+
+export type MutationUpdateInListArgs = {
+    id: Scalars['ID']['input'];
+    status?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Pagination = {
@@ -78,6 +92,7 @@ export type QuerySearchArgs = {
 export type Vinyl = {
     __typename?: 'Vinyl';
     artist: Scalars['String']['output'];
+    country?: Maybe<Scalars['String']['output']>;
     coverImage?: Maybe<Scalars['String']['output']>;
     format?: Maybe<Array<Scalars['String']['output']>>;
     genre?: Maybe<Array<Scalars['String']['output']>>;
@@ -105,6 +120,7 @@ export type GetListQuery = {
         genre?: Array<string> | null;
         year?: string | null;
         coverImage?: string | null;
+        status: string;
         createdAt?: string | null;
     }> | null;
 };
@@ -116,6 +132,7 @@ export type AddInListMutationVariables = Exact<{
     genre?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
     year?: InputMaybe<Scalars['String']['input']>;
     coverImage?: InputMaybe<Scalars['String']['input']>;
+    status?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type AddInListMutation = {
@@ -129,6 +146,8 @@ export type AddInListMutation = {
         genre?: Array<string> | null;
         year?: string | null;
         coverImage?: string | null;
+        status: string;
+        monthlyDate?: string | null;
         createdAt?: string | null;
     } | null;
 };
@@ -148,6 +167,49 @@ export type RemoveFromListMutation = {
         genre?: Array<string> | null;
         year?: string | null;
         coverImage?: string | null;
+        status: string;
+        monthlyDate?: string | null;
+        createdAt?: string | null;
+    } | null;
+};
+
+export type UpdateInListMutationVariables = Exact<{
+    id: Scalars['ID']['input'];
+    status: Scalars['String']['input'];
+}>;
+
+export type UpdateInListMutation = {
+    __typename?: 'Mutation';
+    updateInList?: {
+        __typename?: 'ListVinyl';
+        _id: string;
+        discogsId: number;
+        title: string;
+        artist: string;
+        genre?: Array<string> | null;
+        year?: string | null;
+        coverImage?: string | null;
+        status: string;
+        monthlyDate?: string | null;
+        createdAt?: string | null;
+    } | null;
+};
+
+export type GetMonthlyMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GetMonthlyMutation = {
+    __typename?: 'Mutation';
+    monthly?: {
+        __typename?: 'ListVinyl';
+        _id: string;
+        discogsId: number;
+        title: string;
+        artist: string;
+        genre?: Array<string> | null;
+        year?: string | null;
+        coverImage?: string | null;
+        status: string;
+        monthlyDate?: string | null;
         createdAt?: string | null;
     } | null;
 };
@@ -201,6 +263,7 @@ export const GetListDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'genre' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'year' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'coverImage' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
@@ -254,6 +317,11 @@ export const AddInListDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'coverImage' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -292,6 +360,11 @@ export const AddInListDocument = {
                                 name: { kind: 'Name', value: 'coverImage' },
                                 value: { kind: 'Variable', name: { kind: 'Name', value: 'coverImage' } },
                             },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+                            },
                         ],
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -303,6 +376,8 @@ export const AddInListDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'genre' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'year' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'coverImage' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'monthlyDate' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
@@ -349,6 +424,8 @@ export const RemoveFromListDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'genre' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'year' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'coverImage' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'monthlyDate' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
@@ -358,6 +435,98 @@ export const RemoveFromListDocument = {
         },
     ],
 } as unknown as DocumentNode<RemoveFromListMutation, RemoveFromListMutationVariables>;
+export const UpdateInListDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateInList' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateInList' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: '_id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'discogsId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'artist' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'genre' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'year' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'coverImage' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'monthlyDate' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateInListMutation, UpdateInListMutationVariables>;
+export const GetMonthlyDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GetMonthly' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'monthly' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: '_id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'discogsId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'artist' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'genre' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'year' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'coverImage' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'monthlyDate' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetMonthlyMutation, GetMonthlyMutationVariables>;
 export const GetVinylDocument = {
     kind: 'Document',
     definitions: [
@@ -466,6 +635,8 @@ export type ListVinyl = {
     createdAt?: Maybe<Scalars['String']['output']>;
     discogsId: Scalars['Int']['output'];
     genre?: Maybe<Array<Scalars['String']['output']>>;
+    monthlyDate?: Maybe<Scalars['String']['output']>;
+    status: Scalars['String']['output'];
     title: Scalars['String']['output'];
     year?: Maybe<Scalars['String']['output']>;
 };
@@ -473,7 +644,9 @@ export type ListVinyl = {
 export type Mutation = {
     __typename?: 'Mutation';
     addInList?: Maybe<ListVinyl>;
+    monthly?: Maybe<ListVinyl>;
     removeFromList?: Maybe<ListVinyl>;
+    updateInList?: Maybe<ListVinyl>;
 };
 
 export type MutationAddInListArgs = {
@@ -481,12 +654,22 @@ export type MutationAddInListArgs = {
     coverImage?: InputMaybe<Scalars['String']['input']>;
     genre?: InputMaybe<Array<Scalars['String']['input']>>;
     id: Scalars['Int']['input'];
+    status?: InputMaybe<Scalars['String']['input']>;
     title: Scalars['String']['input'];
     year?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type MutationMonthlyArgs = {
+    month?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type MutationRemoveFromListArgs = {
     id: Scalars['ID']['input'];
+};
+
+export type MutationUpdateInListArgs = {
+    id: Scalars['ID']['input'];
+    status?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Pagination = {
@@ -518,6 +701,7 @@ export type QuerySearchArgs = {
 export type Vinyl = {
     __typename?: 'Vinyl';
     artist: Scalars['String']['output'];
+    country?: Maybe<Scalars['String']['output']>;
     coverImage?: Maybe<Scalars['String']['output']>;
     format?: Maybe<Array<Scalars['String']['output']>>;
     genre?: Maybe<Array<Scalars['String']['output']>>;

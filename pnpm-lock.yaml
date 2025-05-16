@@ -59,6 +59,9 @@ importers:
       graphql-tag:
         specifier: ^2.12.6
         version: 2.12.6(graphql@16.10.0)
+      luxon:
+        specifier: ^3.6.1
+        version: 3.6.1
       mongoose:
         specifier: ^8.13.2
         version: 8.13.2
@@ -72,6 +75,9 @@ importers:
       '@graphql-codegen/typescript-resolvers':
         specifier: ^4.5.0
         version: 4.5.0(graphql-sock@1.0.1(graphql@16.10.0))(graphql@16.10.0)
+      '@types/luxon':
+        specifier: ^3.6.2
+        version: 3.6.2
       '@types/node':
         specifier: ^22.13.14
         version: 22.13.14

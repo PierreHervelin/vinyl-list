@@ -5,3 +5,12 @@
     margin: 0;
     padding: 0;
 }
+
+@keyframes loop {
+    0% {
+        transform: translateY(0) translateZ();
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}

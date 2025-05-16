@@ -1,7 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
 import { Vinyl } from '../__generated__/resolvers-types';
 
-type IVinyl = Omit<Vinyl, 'id'> & { discogsId: number; createdAt: string };
+export type VinylStatus = 'have' | 'want' | 'monthly';
+
+type IVinyl = Omit<Vinyl, 'id'> & { discogsId: number; status: VinylStatus; monthlyDate?: string; createdAt: string };
 
 export const VinylSchema = new Schema<IVinyl>({
     discogsId: {
@@ -25,6 +27,14 @@ export const VinylSchema = new Schema<IVinyl>({
         required: true,
     },
     coverImage: {
+        type: String,
+    },
+    status: {
+        type: String,
+        enum: ['have', 'want', 'monthly'],
+        default: 'want',
+    },
+    monthlyDate: {
         type: String,
     },
     createdAt: {

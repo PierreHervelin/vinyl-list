@@ -13,12 +13,22 @@ function convertResponseResultsToVinyl(results: DiscogsDatabaseSearchResult[]): 
             genre: result.genre,
             style: result.style,
             format: result.format,
+            country: result.country,
             coverImage: result.cover_image,
         };
     });
-    const uniqueVinyls = vinyls.filter(
-        (vinyl, index, self) => index === self.findIndex(v => v.title === vinyl.title && v.artist === vinyl.artist),
-    );
+    const uniqueVinyls = vinyls
+        .slice()
+        .sort((a, b) => {
+            if (a.country === 'Europe' && b.country !== 'Europe') return -1;
+            if (a.country !== 'Europe' && b.country === 'Europe') return 1;
+            if (a.country === 'France' && b.country !== 'France') return -1;
+            if (a.country !== 'France' && b.country === 'France') return 1;
+            return 0;
+        })
+        .filter(
+            (vinyl, index, self) => index === self.findIndex(v => v.title === vinyl.title && v.artist === vinyl.artist),
+        );
     return uniqueVinyls;
 }
 

@@ -1,12 +1,11 @@
-import { AspectRatio, Badge, Flex, IconButton, Link, Skeleton, Text, Tooltip } from '@radix-ui/themes';
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import { useSearchContext } from './context';
-import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { AspectRatio, Badge, DropdownMenu, Flex, IconButton, Link, Skeleton, Text } from '@radix-ui/themes';
+import React, { createContext, useContext, useMemo } from 'react';
 import type { ListVinyl, Vinyl } from '../../gql/graphql';
-import { useListStore } from '../list/store';
-import { isMobile } from 'react-device-detect';
-import { getListVinyl } from '../list/utils';
 import { useListActions } from '../../hooks/list-actions';
+import { useListStore } from '../list/store';
+import { getListVinyl } from '../list/utils';
+import { useSearchContext } from './context';
 import { useSearchStore } from './store';
 
 interface SearchResultProps {
@@ -36,76 +35,98 @@ interface SavedButtonProps {
     hidden?: boolean;
 }
 
-const SavedButton = React.memo<SavedButtonProps>(({ vinyl, hidden }) => {
+const ActionsMenu = React.memo<SavedButtonProps>(({ vinyl, hidden }) => {
     const { listVinyl } = useSearchResultContext();
-    const { save, unSave, loading } = useListActions();
+    const { save, unSave, update } = useListActions();
 
-    const iconSize = isMobile ? 18 : 22;
+    const iconSize = 18;
 
     if (hidden) return null;
     return (
-        <Tooltip content={listVinyl ? 'Supprimer de la liste' : 'Ajouter à la liste'}>
-            <IconButton
-                variant={isMobile ? 'soft' : 'solid'}
-                loading={loading}
-                size={isMobile ? '2' : '3'}
-                style={isMobile ? {} : { position: 'absolute', bottom: '8px', right: '8px' }}
-                onClick={() => (listVinyl ? unSave([listVinyl._id]) : save(vinyl))}
-                color={listVinyl ? 'red' : 'indigo'}
-            >
-                {listVinyl ? (
-                    <MinusIcon width={iconSize} height={iconSize} />
-                ) : (
-                    <PlusIcon width={iconSize} height={iconSize} />
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+                <IconButton variant="ghost">
+                    <DotsHorizontalIcon width={iconSize} height={iconSize} />
+                </IconButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+                {(listVinyl?.status !== 'have' || !listVinyl) && (
+                    <DropdownMenu.Sub>
+                        <DropdownMenu.SubTrigger>Ajouter</DropdownMenu.SubTrigger>
+                        <DropdownMenu.SubContent>
+                            {!listVinyl && (
+                                <DropdownMenu.Item onClick={() => save(vinyl)}>à la liste</DropdownMenu.Item>
+                            )}
+                            {listVinyl?.status !== 'have' && (
+                                <DropdownMenu.Item
+                                    onClick={async () => {
+                                        if (listVinyl) {
+                                            await update(listVinyl._id, 'have');
+                                            return;
+                                        }
+                                        save(vinyl, 'have');
+                                    }}
+                                >
+                                    à la collection
+                                </DropdownMenu.Item>
+                            )}
+                        </DropdownMenu.SubContent>
+                    </DropdownMenu.Sub>
                 )}
-            </IconButton>
-        </Tooltip>
+
+                {listVinyl && (
+                    <DropdownMenu.Item onClick={() => unSave([listVinyl._id])} color="red">
+                        Supprimer
+                    </DropdownMenu.Item>
+                )}
+            </DropdownMenu.Content>
+        </DropdownMenu.Root>
+    );
+});
+
+export const VinylCover = React.memo<{ url?: string }>(({ url }) => {
+    const coverImageEmpty = useMemo<boolean>(() => {
+        if (!url) return true;
+        return url.includes('spacer.gif');
+    }, [url]);
+
+    return (
+        <img
+            src={!coverImageEmpty ? url : 'src/assets/image-not-found.png'}
+            alt="Cover"
+            style={{
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+                borderRadius: 'var(--radius-2)',
+            }}
+        />
     );
 });
 
 const SearchResult = React.memo<SearchResultProps>(({ vinyl }) => {
     const { loading } = useSearchContext();
-    const { saved } = useSearchResultContext();
+    const { saved, listVinyl } = useSearchResultContext();
     const addArtist = useSearchStore(state => state.addArtist);
-    const [hovered, setHovered] = useState(false);
-
-    const coverImageEmpty = useMemo<boolean>(() => {
-        if (!vinyl.coverImage) return true;
-        return vinyl.coverImage.includes('spacer.gif');
-    }, [vinyl]);
 
     return (
         <Flex direction="column" gap="2">
             <Skeleton loading={loading}>
-                <AspectRatio
-                    ratio={1}
-                    style={{ width: '100%' }}
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
-                >
+                <AspectRatio ratio={1} style={{ width: '100%' }}>
                     {saved && (
                         <Badge
                             variant="solid"
+                            color={listVinyl?.status === 'have' ? 'green' : undefined}
                             style={{
                                 position: 'absolute',
                                 top: '8px',
                                 left: '8px',
                             }}
                         >
-                            Ajouté
+                            {listVinyl?.status === 'have' ? 'Collection' : 'Liste'}
                         </Badge>
                     )}
-                    <img
-                        src={!coverImageEmpty ? (vinyl.coverImage as string) : 'src/assets/image-not-found.png'}
-                        alt="Cover"
-                        style={{
-                            objectFit: 'cover',
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: 'var(--radius-2)',
-                        }}
-                    />
-                    {!isMobile && <SavedButton vinyl={vinyl} hidden={!hovered} />}
+                    <VinylCover url={vinyl.coverImage as string} />
                 </AspectRatio>
             </Skeleton>
             <Flex>
@@ -130,7 +151,7 @@ const SearchResult = React.memo<SearchResultProps>(({ vinyl }) => {
                             </Link>
                         </Skeleton>
                     </Flex>
-                    {isMobile && !loading && <SavedButton vinyl={vinyl} />}
+                    <ActionsMenu vinyl={vinyl} />
                 </Flex>
             </Flex>
         </Flex>

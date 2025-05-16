@@ -26,6 +26,8 @@ export type ListVinyl = {
   createdAt?: Maybe<Scalars['String']['output']>;
   discogsId: Scalars['Int']['output'];
   genre?: Maybe<Array<Scalars['String']['output']>>;
+  monthlyDate?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
   title: Scalars['String']['output'];
   year?: Maybe<Scalars['String']['output']>;
 };
@@ -33,7 +35,9 @@ export type ListVinyl = {
 export type Mutation = {
   __typename?: 'Mutation';
   addInList?: Maybe<ListVinyl>;
+  monthly?: Maybe<ListVinyl>;
   removeFromList?: Maybe<ListVinyl>;
+  updateInList?: Maybe<ListVinyl>;
 };
 
 
@@ -42,13 +46,25 @@ export type MutationAddInListArgs = {
   coverImage?: InputMaybe<Scalars['String']['input']>;
   genre?: InputMaybe<Array<Scalars['String']['input']>>;
   id: Scalars['Int']['input'];
+  status?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
   year?: InputMaybe<Scalars['String']['input']>;
 };
 
 
+export type MutationMonthlyArgs = {
+  month?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type MutationRemoveFromListArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateInListArgs = {
+  id: Scalars['ID']['input'];
+  status?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Pagination = {
@@ -81,6 +97,7 @@ export type QuerySearchArgs = {
 export type Vinyl = {
   __typename?: 'Vinyl';
   artist: Scalars['String']['output'];
+  country?: Maybe<Scalars['String']['output']>;
   coverImage?: Maybe<Scalars['String']['output']>;
   format?: Maybe<Array<Scalars['String']['output']>>;
   genre?: Maybe<Array<Scalars['String']['output']>>;
@@ -193,6 +210,8 @@ export type ListVinylResolvers<ContextType = DataSourceContext, ParentType exten
   createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   discogsId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   genre?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  monthlyDate?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -200,7 +219,9 @@ export type ListVinylResolvers<ContextType = DataSourceContext, ParentType exten
 
 export type MutationResolvers<ContextType = DataSourceContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   addInList?: Resolver<Maybe<ResolversTypes['ListVinyl']>, ParentType, ContextType, RequireFields<MutationAddInListArgs, 'artist' | 'id' | 'title'>>;
+  monthly?: Resolver<Maybe<ResolversTypes['ListVinyl']>, ParentType, ContextType, Partial<MutationMonthlyArgs>>;
   removeFromList?: Resolver<Maybe<ResolversTypes['ListVinyl']>, ParentType, ContextType, RequireFields<MutationRemoveFromListArgs, 'id'>>;
+  updateInList?: Resolver<Maybe<ResolversTypes['ListVinyl']>, ParentType, ContextType, RequireFields<MutationUpdateInListArgs, 'id'>>;
 }>;
 
 export type PaginationResolvers<ContextType = DataSourceContext, ParentType extends ResolversParentTypes['Pagination'] = ResolversParentTypes['Pagination']> = ResolversObject<{
@@ -219,6 +240,7 @@ export type QueryResolvers<ContextType = DataSourceContext, ParentType extends R
 
 export type VinylResolvers<ContextType = DataSourceContext, ParentType extends ResolversParentTypes['Vinyl'] = ResolversParentTypes['Vinyl']> = ResolversObject<{
   artist?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   coverImage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   format?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   genre?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;

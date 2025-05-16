@@ -1,12 +1,12 @@
+import { AspectRatio, Badge, Box, Button, Checkbox, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import type { ReactNode } from 'react';
 import React, { useEffect, useMemo } from 'react';
-import { useListStore } from '../store';
-import type { ListVinyl } from '../../../gql/graphql';
 import { isMobile } from 'react-device-detect';
-import { AspectRatio, Badge, Box, Button, Checkbox, Flex, Heading, Table, Text } from '@radix-ui/themes';
-import { useListActions } from '../../../hooks/list-actions';
-import { ListTableContextProvider, useListTableContext } from './context';
 import { useAppContext } from '../../../app';
+import type { ListVinyl } from '../../../gql/graphql';
+import { useListActions, type VinylStatus } from '../../../hooks/list-actions';
+import { useListStore } from '../store';
+import { ListTableContextProvider, useListTableContext } from './context';
 
 interface TableHeader {
     value: ReactNode;
@@ -114,15 +114,18 @@ const ListTableActions = React.memo(() => {
     );
 });
 
-const ListTable = React.memo(() => {
+const ListTable = React.memo<{ status: VinylStatus }>(({ status }) => {
     const list = useListStore(state => state.list);
     const filteredList = useMemo<ListVinyl[]>(() => {
-        return list.sort((a, b) => {
-            const dateA = new Date(a.createdAt ?? '').getTime();
-            const dateB = new Date(b.createdAt ?? '').getTime();
-            return dateB - dateA;
-        });
-    }, [list]);
+        return list
+            .slice()
+            .sort((a, b) => {
+                const dateA = new Date(a.createdAt ?? '').getTime();
+                const dateB = new Date(b.createdAt ?? '').getTime();
+                return dateB - dateA;
+            })
+            .filter(vinyl => vinyl.status === status);
+    }, [list, status]);
 
     const { selection, toggleAll } = useListTableContext();
 
@@ -131,7 +134,7 @@ const ListTable = React.memo(() => {
     return (
         <Flex direction="column" position="relative" gap="4">
             <Heading as="h2" size="4">
-                Ma liste
+                {status === 'have' ? 'Ma collection' : 'Ma liste'}
             </Heading>
             <ListTableActions />
             <Table.Root>
@@ -157,10 +160,10 @@ const ListTable = React.memo(() => {
     );
 });
 
-export const ListTableWrapper = React.memo(() => {
+export const ListTableWrapper = React.memo<{ status: VinylStatus }>(({ status }) => {
     return (
         <ListTableContextProvider>
-            <ListTable />
+            <ListTable status={status} />
         </ListTableContextProvider>
     );
 });

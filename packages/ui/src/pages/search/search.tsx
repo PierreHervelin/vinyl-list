@@ -1,30 +1,59 @@
-import { Cross1Icon, GridIcon, MagnifyingGlassIcon, MinusIcon, PersonIcon, RowsIcon } from '@radix-ui/react-icons';
+import {
+    Cross1Icon,
+    GridIcon,
+    MagnifyingGlassIcon,
+    MinusIcon,
+    PersonIcon,
+    PlusIcon,
+    RowsIcon,
+} from '@radix-ui/react-icons';
 import { Button, Flex, Grid, IconButton, SegmentedControl, Select, Text, TextField } from '@radix-ui/themes';
-import React, { useEffect, useMemo, useState } from 'react';
-import { SearchProvider, useSearchContext, type View } from './context';
-import { SearchResultWrapper } from './result';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppContext } from '../../app';
-import { useSearchStore } from './store';
 import type { Vinyl } from '../../gql/graphql';
 import { useListStore } from '../list/store';
 import { getListVinyl } from '../list/utils';
+import { SearchProvider, useSearchContext, type View } from './context';
+import { SearchResultWrapper } from './result';
+import { useSearchStore } from './store';
 
 interface Genre {
     label: string;
     value: string;
 }
 
+export type Color =
+    | 'ruby'
+    | 'blue'
+    | 'brown'
+    | 'crimson'
+    | 'cyan'
+    | 'gold'
+    | 'gray'
+    | 'green'
+    | 'indigo'
+    | 'lime'
+    | 'orange'
+    | 'pink'
+    | 'plum'
+    | 'purple'
+    | 'red'
+    | 'teal'
+    | 'tomato'
+    | 'violet'
+    | 'yellow';
+
 const GENRES: Genre[] = [
-    { label: 'Rock', value: 'rock' },
-    { label: 'Pop', value: 'pop' },
-    { label: 'Hip-Hop', value: 'hip-hop' },
-    { label: 'Soul', value: 'soul' },
-    { label: 'Jazz', value: 'jazz' },
-    { label: 'Classique', value: 'classical' },
-    { label: 'Electro', value: 'electronic' },
-    { label: 'Reggae', value: 'reggae' },
-    { label: 'Country', value: 'country' },
-    { label: 'Blues', value: 'blues' },
+    { label: 'Rock', value: 'Rock' },
+    { label: 'Pop', value: 'Pop' },
+    { label: 'Hip-Hop', value: 'Hip Hop' },
+    { label: 'Soul', value: 'Funk / Soul' },
+    { label: 'Jazz', value: 'Jazz' },
+    { label: 'Classique', value: 'Classical' },
+    { label: 'Electro', value: 'Electronic' },
+    { label: 'Reggae', value: 'Reggae' },
+    { label: 'Country', value: 'Country' },
+    { label: 'Blues', value: 'Blues' },
 ];
 
 export const SearchWrapper = React.memo(() => {
@@ -35,20 +64,37 @@ export const SearchWrapper = React.memo(() => {
     );
 });
 
-export const DynamicFilterTag = React.memo<{ value: string }>(({ value }) => {
+export const DynamicFilterTag = React.memo<{ value: string; type: 'artist' | 'genre' }>(({ value, type }) => {
     const removeArtist = useSearchStore(state => state.removeArtist);
+    const removeGenre = useSearchStore(state => state.removeGenre);
     const [hovered, setHovered] = useState(false);
     function getIcon() {
         if (hovered) {
             return <MinusIcon width="16" height="16" />;
         }
+        if (type === 'genre') {
+            return;
+        }
         return <PersonIcon width="16" height="16" />;
+    }
+    function getColor(): Color {
+        if (type === 'artist') {
+            return 'indigo';
+        }
+        return 'orange';
     }
     return (
         <Button
             variant="soft"
+            color={getColor()}
             size="1"
-            onClick={() => removeArtist(value)}
+            onClick={() => {
+                if (type === 'genre') {
+                    removeGenre(value);
+                    return;
+                }
+                removeArtist(value);
+            }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
@@ -58,20 +104,40 @@ export const DynamicFilterTag = React.memo<{ value: string }>(({ value }) => {
     );
 });
 
+export const GenreSelectItem = React.memo<{ genre: Genre }>(({ genre }) => {
+    const addGenre = useSearchStore(state => state.addGenre);
+    const [hovered, setHovered] = useState(false);
+
+    return (
+        <Select.Item
+            value={genre.value}
+            onClick={() => {
+                addGenre(genre.value);
+            }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+        >
+            <Flex align="center" gap="1">
+                {hovered && <PlusIcon />}
+                <Text>{genre.label}</Text>
+            </Flex>
+        </Select.Item>
+    );
+});
+
 export const Search = React.memo(() => {
     const { scrollTop } = useAppContext();
 
+    const [searchMode, setSearchMode] = useState<string>('query');
     const query = useSearchStore(state => state.query);
     const genre = useSearchStore(state => state.genre);
     const artist = useSearchStore(state => state.artist);
     const setQuery = useSearchStore(state => state.setQuery);
-    const setGenre = useSearchStore(state => state.setGenre);
+    const addGenre = useSearchStore(state => state.addGenre);
+    const addArtist = useSearchStore(state => state.addArtist);
 
     const [currentQuery, setCurrentQuery] = useState<string>(query);
-
-    function setQueryAndGenre() {
-        setQuery(currentQuery);
-    }
+    const textFieldRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setCurrentQuery(query);
@@ -93,6 +159,7 @@ export const Search = React.memo(() => {
             >
                 <Flex align="center" gap="4" wrap="wrap">
                     <TextField.Root
+                        ref={textFieldRef}
                         placeholder="Rechercher un vinyle"
                         size="3"
                         style={{ maxWidth: '600px', flexGrow: 1 }}
@@ -100,39 +167,73 @@ export const Search = React.memo(() => {
                         onChange={e => setCurrentQuery(e.target.value)}
                         onKeyUp={e => {
                             if (e.key === 'Enter') {
-                                setQueryAndGenre();
+                                if (searchMode === 'query') {
+                                    setQuery(currentQuery);
+                                    return;
+                                }
+                                if (searchMode === 'genre') {
+                                    addGenre(currentQuery);
+                                }
+                                if (searchMode === 'artist') {
+                                    addArtist(currentQuery);
+                                }
+                                setQuery('');
                             }
                         }}
                     >
                         <TextField.Slot>
                             <MagnifyingGlassIcon height="16" width="16" />
                         </TextField.Slot>
+
+                        <TextField.Slot>
+                            <Select.Root size="1" value={searchMode} onValueChange={setSearchMode} defaultValue="query">
+                                <Select.Trigger />
+                                <Select.Content>
+                                    <Select.Item value="query">
+                                        <Text>Mots-clés</Text>
+                                    </Select.Item>
+                                    <Select.Item value="artist">
+                                        <Text>Artiste</Text>
+                                    </Select.Item>
+                                    <Select.Item value="genre">
+                                        <Text>Genre</Text>
+                                    </Select.Item>
+                                </Select.Content>
+                            </Select.Root>
+                        </TextField.Slot>
+
                         {currentQuery.length > 0 && (
                             <TextField.Slot>
-                                <IconButton variant="soft" size="1" onClick={() => setQuery('')}>
+                                <IconButton
+                                    variant="soft"
+                                    size="1"
+                                    onClick={() => {
+                                        setQuery('');
+                                        setCurrentQuery('');
+                                        textFieldRef.current?.focus();
+                                    }}
+                                >
                                     <Cross1Icon />
                                 </IconButton>
                             </TextField.Slot>
                         )}
                     </TextField.Root>
-                    <Select.Root size="3" value={genre} onValueChange={setGenre} defaultValue="empty">
-                        <Select.Trigger />
-                        <Select.Content>
-                            <Select.Item key="empty" value="empty">
-                                <Text color="gray">Genre</Text>
-                            </Select.Item>
+                    <Select.Root size="3" value={''} onValueChange={addGenre}>
+                        <Select.Trigger placeholder="Genre" />
+                        <Select.Content style={{ width: '150px' }}>
                             {GENRES.map(genre => (
-                                <Select.Item key={genre.value} value={genre.value}>
-                                    {genre.label}
-                                </Select.Item>
+                                <GenreSelectItem key={genre.value} genre={genre} />
                             ))}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
-                {artist.length > 0 && (
+                {artist.length + genre.length > 0 && (
                     <Flex gap="2" wrap="wrap">
                         {artist.map(a => (
-                            <DynamicFilterTag key={a} value={a} />
+                            <DynamicFilterTag key={a} value={a} type="artist" />
+                        ))}
+                        {genre.map(g => (
+                            <DynamicFilterTag key={g} value={g} type="genre" />
                         ))}
                     </Flex>
                 )}
@@ -154,11 +255,17 @@ export const SearchResultList = React.memo(() => {
         return searchResult.results.slice().sort((a, b) => {
             const aSaved = getListVinyl(list, a);
             const bSaved = getListVinyl(list, b);
-            if (aSaved && !bSaved) return -1;
-            if (!aSaved && bSaved) return 1;
             if (aSaved && bSaved) {
+                const statusOrder = ['have', 'want'];
+                const aStatusIndex = statusOrder.indexOf(aSaved.status ?? '');
+                const bStatusIndex = statusOrder.indexOf(bSaved.status ?? '');
+                if (aStatusIndex !== bStatusIndex) {
+                    return aStatusIndex - bStatusIndex;
+                }
                 return new Date(bSaved.createdAt ?? '').getTime() - new Date(aSaved.createdAt ?? '').getTime();
             }
+            if (aSaved && !bSaved) return -1;
+            if (!aSaved && bSaved) return 1;
             return 0;
         });
     }, [searchResult, list]);

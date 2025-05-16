@@ -51,13 +51,13 @@ export const SearchProvider = React.memo<PropsWithChildren>(({ children }) => {
     const setEmptySearchResult = useSearchStore(state => state.setEmptySearchResult);
 
     const filterAvailable = useMemo<boolean>(() => {
-        return !!query || artist.length > 0 || genre !== 'empty';
+        return !!query || artist.length > 0 || genre.length > 0;
     }, [query, artist, genre]);
 
     const { data, loading } = useQuery(FETCH_VINYLS, {
         variables: {
             query,
-            genre: genre !== 'empty' ? [genre] : undefined,
+            genre,
             artist,
         },
         skip: !filterAvailable,
@@ -81,15 +81,13 @@ export const SearchProvider = React.memo<PropsWithChildren>(({ children }) => {
         const params = new URLSearchParams({
             ...(query && { query }),
             ...(artist.length > 0 && { artist: artist.join(',') }),
-            ...(genre !== 'empty' && { genre }),
+            ...(genre.length > 0 && { genre: genre.join(',') }),
         });
         setSearchParams(params);
     }
 
     useEffect(() => {
-        if (filterAvailable) {
-            setSearchParamsWithFilters();
-        }
+        setSearchParamsWithFilters();
     }, [query, genre, artist]);
 
     useEffect(() => {

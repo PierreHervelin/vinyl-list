@@ -1,8 +1,8 @@
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { graphql } from '../gql';
 import type { Vinyl } from '../gql/graphql';
 import { useListStore } from '../pages/list/store';
-import { useMutation } from '@apollo/client';
 
 const ADD_IN_LIST = graphql(`
     mutation AddInList(
@@ -12,8 +12,17 @@ const ADD_IN_LIST = graphql(`
         $genre: [String!]
         $year: String
         $coverImage: String
+        $status: String
     ) {
-        addInList(id: $id, title: $title, artist: $artist, genre: $genre, year: $year, coverImage: $coverImage) {
+        addInList(
+            id: $id
+            title: $title
+            artist: $artist
+            genre: $genre
+            year: $year
+            coverImage: $coverImage
+            status: $status
+        ) {
             _id
             discogsId
             title
@@ -21,6 +30,8 @@ const ADD_IN_LIST = graphql(`
             genre
             year
             coverImage
+            status
+            monthlyDate
             createdAt
         }
     }
@@ -36,20 +47,61 @@ const REMOVE_FROM_LIST = graphql(`
             genre
             year
             coverImage
+            status
+            monthlyDate
             createdAt
         }
     }
 `);
 
+const UPDATE_IN_LIST = graphql(`
+    mutation UpdateInList($id: ID!, $status: String!) {
+        updateInList(id: $id, status: $status) {
+            _id
+            discogsId
+            title
+            artist
+            genre
+            year
+            coverImage
+            status
+            monthlyDate
+            createdAt
+        }
+    }
+`);
+
+const GET_MONTHLY = graphql(`
+    mutation GetMonthly {
+        monthly {
+            _id
+            discogsId
+            title
+            artist
+            genre
+            year
+            coverImage
+            status
+            monthlyDate
+            createdAt
+        }
+    }
+`);
+
+export type VinylStatus = 'have' | 'want' | 'monthly';
+
 export function useListActions() {
     const add = useListStore(state => state.addInList);
     const remove = useListStore(state => state.removeFromList);
+    const updateInStore = useListStore(state => state.updateInList);
     const [loading, setLoading] = useState(false);
 
     const [addInList] = useMutation(ADD_IN_LIST);
     const [removeFromList] = useMutation(REMOVE_FROM_LIST);
+    const [updateInList] = useMutation(UPDATE_IN_LIST);
+    const [getMonthly] = useMutation(GET_MONTHLY);
 
-    async function save(vinyl: Vinyl) {
+    async function save(vinyl: Vinyl, status?: VinylStatus) {
         setLoading(true);
         const result = await addInList({
             variables: {
@@ -59,6 +111,7 @@ export function useListActions() {
                 genre: vinyl.genre,
                 year: vinyl.year,
                 coverImage: vinyl.coverImage,
+                status: status ?? 'want',
             },
         });
         if (!result.data?.addInList) return;
@@ -77,5 +130,21 @@ export function useListActions() {
         if (callBack) callBack();
     }
 
-    return { save, unSave, loading };
+    async function update(_id: string, status: VinylStatus) {
+        setLoading(true);
+        const result = await updateInList({ variables: { id: _id, status } });
+        if (!result.data?.updateInList) return;
+        updateInStore(result.data.updateInList);
+        setLoading(false);
+    }
+
+    async function monthly() {
+        setLoading(true);
+        const result = await getMonthly();
+        if (!result.data?.monthly) return;
+        updateInStore(result.data.monthly);
+        setLoading(false);
+    }
+
+    return { save, unSave, update, monthly, loading };
 }

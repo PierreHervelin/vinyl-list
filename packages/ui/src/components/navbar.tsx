@@ -1,8 +1,8 @@
+import { BookmarkIcon, MagnifyingGlassIcon, StarIcon } from '@radix-ui/react-icons';
 import { Box, Flex, Text, type IconProps } from '@radix-ui/themes';
 import React, { useMemo, type ReactElement } from 'react';
-import { BookmarkIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { Link, useMatch } from 'react-router-dom';
 import { BrowserView, MobileView } from 'react-device-detect';
+import { Link, useMatch } from 'react-router-dom';
 
 interface NavbarItem {
     title: string;
@@ -28,6 +28,11 @@ const NAVBAR_ITEMS: NavbarItem[] = [
         title: 'Liste',
         to: '/list',
         icon: <BookmarkIcon />,
+    },
+    {
+        title: 'Collection',
+        to: '/collection',
+        icon: <StarIcon />,
     },
 ];
 

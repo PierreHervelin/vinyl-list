@@ -6,6 +6,7 @@ type Vinyl {
     genre: [String!]
     year: String
     format: [String!]
+    country: String
     coverImage: String
 }
 
@@ -17,6 +18,8 @@ type ListVinyl {
     genre: [String!]
     year: String
     coverImage: String
+    status: String!
+    monthlyDate: String
     createdAt: String
 }
 
@@ -34,6 +37,16 @@ type Query {
 }
 
 type Mutation {
-    addInList(id: Int!, title: String!, artist: String!, genre: [String!], year: String, coverImage: String): ListVinyl
+    addInList(
+        id: Int!
+        title: String!
+        artist: String!
+        genre: [String!]
+        year: String
+        coverImage: String
+        status: String
+    ): ListVinyl
+    updateInList(id: ID!, status: String): ListVinyl
     removeFromList(id: ID!): ListVinyl
+    monthly(month: String): ListVinyl
 }
